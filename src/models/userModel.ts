@@ -2,7 +2,7 @@ import mongoose, { Types } from "mongoose";
 import bcrypt from "bcrypt";
 
 export interface IUser {
-  id:Types.ObjectId;
+  id: Types.ObjectId;
   username: string;
   password: string;
   deposit: number;
@@ -23,7 +23,14 @@ const UserSchema = new mongoose.Schema<IUser>({
     minLength: [6, "Must be at least 6 "],
   },
   deposit: { type: Number, default: 0 },
-  role: { type: String, enum: ["buyer", "seller", "admin"], default: "buyer" },
+  role: {
+    type: String,
+    enum: {
+      values: ["buyer", "seller", "admin"],
+      message: "role must be buyer pr seller or admin",
+    },
+    default: "buyer",
+  },
 });
 
 UserSchema.pre("save", async function (next) {
@@ -39,7 +46,5 @@ export const comparePassword = async function (
 ): Promise<Boolean> {
   return await bcrypt.compare(password, dpPassword);
 };
-
-
 
 export const UserModel = mongoose.model<IUser>("User", UserSchema);

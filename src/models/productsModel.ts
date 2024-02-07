@@ -1,7 +1,7 @@
 import mongoose, { Types } from "mongoose";
 
 export interface IProduct {
-  id:Types.ObjectId;
+  id: Types.ObjectId;
   productName: string;
   amountAvailable: number;
   cost: number;
@@ -11,12 +11,21 @@ export interface IProduct {
 const ProductSchema = new mongoose.Schema({
   productName: {
     type: String,
-    require: [true, "please provide product name"],
+    required: [true, "please provide product name"],
     index: true,
     unique: true,
   },
-  amountAvailable: { type: Number, require: true },
-  cost: { type: Number, require: true },
+  amountAvailable: { type: Number, require: [true, "please provide available amount"] },
+  cost: {
+    type: Number,
+    required: [true, "please provide cost"],
+    validate: {
+      validator: function (v: number) {
+        return v%5==0;
+      },
+      message: "invalid cost must be modulus 5",
+    },
+  },
   sellerId: { type: Types.ObjectId, ref: "User" },
 });
 

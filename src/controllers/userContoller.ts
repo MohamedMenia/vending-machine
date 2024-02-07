@@ -16,48 +16,52 @@ export const createUser = async (
     if (error.code === 11000) {
       return res.status(409).json({
         status: "failed",
-        message: "Username  already exists",
+        message: "that Username  already used",
       });
     }
-    return res.status(403).json({ status: "failed", message: error.message });
+    return res.status(400).json({ status: "failed", message: error.message });
   }
 };
 
 export const login = async (req: Request, res: Response) => {
-  if (!req.body.username) {
-    return res
-      .status(422)
-      .json({ status: "failed", message: "please enter username" });
+  try {
+    if (!req.body.username) {
+      return res
+        .status(400)
+        .json({ status: "failed", message: "please enter username" });
+    }
+    if (!req.body.password) {
+      return res
+        .status(400)
+        .json({ status: "failed", message: "please enter paswword" });
+    }
+    let user = (await UserModel.findOne({
+      username: req.body.username,
+    })) as unknown as IUser;
+    if (!user) {
+      return res
+        .status(401)
+        .json({ status: "failed", message: "wrong username" });
+    }
+    const isMatchPass = await comparePassword(req.body.password, user.password);
+    if (!isMatchPass) {
+      return res
+        .status(401)
+        .json({ status: "failed", message: "wrong password" });
+    }
+    const token = signToken(user.id);
+    res.cookie("jwt", "Bearer " + token, {
+      httpOnly: true,
+      secure: true,
+      maxAge: 60 * 60 * 24 * 1000,
+    });
+    res.status(200).json({
+      status: "sucsess",
+      user
+    });
+  } catch (error) {
+    return res.status(400).json({ status: "failed", message: error.message });
   }
-  if (!req.body.password) {
-    return res
-      .status(422)
-      .json({ status: "failed", message: "please enter paswword" });
-  }
-  let user = (await UserModel.findOne({
-    username: req.body.username,
-  })) as unknown as IUser;
-  if (!user) {
-    return res
-      .status(406)
-      .json({ status: "failed", message: "wrong username" });
-  }
-  const isMatchPass = await comparePassword(req.body.password, user.password);
-  if (!isMatchPass) {
-    return res
-      .status(406)
-      .json({ status: "failed", message: "wrong password" });
-  }
-  const token = signToken(user.id);
-  res.cookie("jwt", "Bearer " + token, {
-    httpOnly: true,
-    secure: true,
-    maxAge: 60 * 60 * 24 * 1000,
-  });
-  res.status(200).json({
-    status: "sucsess",
-    user: { username: user.username, role: user.role },
-  });
 };
 
 export const updateUser = async (req: Request, res: Response) => {
@@ -76,7 +80,7 @@ export const updateUser = async (req: Request, res: Response) => {
 
     res.status(200).json({ status: "sucsess", user });
   } catch (error) {
-    return res.status(403).json(error.message);
+    return res.status(400).json({ status: "failed", message: error.message });
   }
 };
 
@@ -86,14 +90,22 @@ export const deleteUser = async (req: Request, res: Response) => {
     await UserModel.findByIdAndDelete(id);
     await ProductModel.deleteMany({ sellerId: id });
 
-    res
-      .clearCookie("jwt")
-      .status(200)
-      .json({
-        status: "sucsess",
-        message: "user data and his products has been deleted",
-      });
+    res.clearCookie("jwt").status(200).json({
+      status: "sucsess",
+      message: "user data and his products has been deleted",
+    });
   } catch (error) {
-    return res.status(403).json(error.message);
+    return res.status(400).json({ status: "failed", message: error.message });
+  }
+};
+export const getUsers = async (req: Request, res: Response) => {
+  try {
+    const users = await UserModel.find();
+    res.status(200).json({
+      status: "sucsess",
+      users,
+    });
+  } catch (error) {
+    return res.status(400).json({ status: "failed", message: error.message });
   }
 };

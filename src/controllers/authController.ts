@@ -15,29 +15,47 @@ export const verifyToken = async (
   res: Response,
   next: NextFunction
 ) => {
-  let token = req.cookies.jwt;
-  if (!token && token.startsWith("Bearer ")) {
-    return res.status(406).json({
-      status: "failed",
-      message: "Invalid credentials",
-    });
-  }
-  token = token.split(" ")[1];
-  const decodedToken = jwt.verify(
-    token,
-    process.env.SECRET_STR as string
-  ) as jwt.JwtPayload;
-  const id = decodedToken.id;
-  const user = (await UserModel.findById(id)) as unknown as IUser;
-  if (!user) {
-    return res.status(403).json({
+  try {
+    let token = req.cookies.jwt;
+    if (!token) {
+      return res.status(406).json({
+        status: "failed",
+        message: "Invalid credentials",
+      });
+    }
+    token = token.split(" ")[1];
+    const decodedToken = jwt.verify(
+      token,
+      process.env.SECRET_STR as string
+    ) as jwt.JwtPayload;
+    const id = decodedToken.id;
+    const user = (await UserModel.findById(id)) as unknown as IUser;
+    if (!user) {
+      return res.status(403).json({
+        status: "failed",
+        message: "please login again",
+      });
+    }
+    req.user = user;
+
+    return next();
+  } catch (error) {
+    return   res.status(400).json({
       status: "failed",
       message: "please login again",
     });
   }
-  req.user = user;
-
-  return next();
+};
+export const authorizeAdmin = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (req.user.role == "admin") return next();
+  return res.status(403).json({
+    status: "failed",
+    message: "unauthorized",
+  });
 };
 
 export const authorizeUser = (
@@ -55,6 +73,7 @@ export const authorizeUser = (
   }
   return next();
 };
+
 export const authorizeBuyer = (
   req: Request,
   res: Response,
@@ -62,7 +81,6 @@ export const authorizeBuyer = (
 ) => {
   if (req.user.role == "admin") return next();
   if (req.user.role != "buyer")
-
     return res.status(403).json({
       status: "failed",
       message: "unauthorized",
@@ -88,8 +106,8 @@ export const authorizeSeller = async (
     else return next();
   }
 
-  //if not post req this mean that it 's update or delete
-  //and this block of code makes sure that product seller is the one who modfies the product
+  //if not  a post req this means that it 's update or delete
+  //and this block of code makes sure that  seller only modfies his own product
 
   const product = (await ProductModel.findById(
     req.params.id

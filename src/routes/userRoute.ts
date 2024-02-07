@@ -1,13 +1,14 @@
 import { Router } from "express";
 import * as userContoller from "../controllers/userContoller";
-import { authorizeUser ,verifyToken} from "../controllers/authController";
+import { authorizeAdmin, authorizeUser ,verifyToken} from "../controllers/authController";
 
 const router = Router();
 
 router.post("/login", userContoller.login);
 router
   .route("/")
-  .post(userContoller.createUser, userContoller.login);
+  .post(userContoller.createUser, userContoller.login)
+  .get(verifyToken,authorizeAdmin,userContoller.getUsers);
 
 
   router
