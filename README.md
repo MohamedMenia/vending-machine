@@ -6,10 +6,10 @@ Backend APIs for simulating a vending machine using NodeJS, ExpressJS, and Types
 3. run `npm i` <br />
 4. run  `npm start`<br />
 
-<span style="color:#59afe1">
-NOTE  <br/>
-I pushed the env file and created a user for you to use my MongoDB cluster, making it easier to run the project and easier to use inserted data all users password is "123123". <br />
-</span>
+
+> **NOTE**  <br/>
+> I pushed the env file and created a user for you to use my MongoDB cluster, making it easier to run the project and easier to use inserted data all users password is "123123". <br />
+
 
 ## APIs: 
 - user:
