@@ -7,9 +7,6 @@ Backend APIs for simulating a vending machine using NodeJS, ExpressJS, and Types
 4. run  `npm start`<br />
 
 
-> **NOTE**  <br/>
-> I pushed the env file and created a user for you to use my MongoDB cluster, making it easier to run the project and easier to use inserted data all users password is "123123". <br />
-
 
 ## APIs: 
 - user:
@@ -24,7 +21,7 @@ Backend APIs for simulating a vending machine using NodeJS, ExpressJS, and Types
     - PUT:     http://localhost:3030/products/:id  for updating the product only the seller of the product and admin can use it  <br />
     - DELETE:  http://localhost:3030/products/:id  for deleting product only seller of the product and admin can use it <br />
 - VendingMachine:
-    - POST: http://localhost:3030/vendingMachine/  For buying products [{productId,amountOfProducts},{}...]
+    - POST: http://localhost:3030/vendingMachine/  For buying products [ { productId , amountOfProducts } ,{}...]
     - POST: http://localhost:3030/vendingMachine/buyerDeposit For deposit coins [5,10,20,50,100] only and forn buyer and admins only
     - POST: http://localhost:3030/vendingMachine/depositBack  For reset Deposit back
 
